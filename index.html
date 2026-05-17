@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>片交 無線トレーニング|ATセキュリティー</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;
+  background: #eef2f7;
+  color: #1a2d4a;
+  min-height: 100vh;
+}
+
+/* ヘッダー */
+.header {
+  background: linear-gradient(135deg, #1a3a6b, #0d5ca4);
+  padding: 18px 24px;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(26,58,107,.3);
+}
+.header h1 { font-size: 19px; font-weight:900; letter-spacing:2px; color:#fff; }
+.header h1 span { color:#f5c842; }
+.header p { font-size:11px; color:rgba(255,255,255,.65); margin-top:4px; }
+
+/* タブ */
+.tabs {
+  display: flex;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.tab {
+  flex:1;
+  padding: 14px 8px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #888;
+  border-bottom: 3px solid transparent;
+  transition: all .2s;
+  letter-spacing:.5px;
+}
+.tab.active { color:#0d5ca4; border-bottom-color:#0d5ca4; background: rgba(13,92,164,.05); }
+.tab:hover:not(.active) { color:#555; background: rgba(0,0,0,.02); }
+
+/* パネル */
+.panel { display:none; padding: 18px 16px; max-width:720px; margin:0 auto; }
+.panel.active { display:block; }
+
+/* ==== シミュレーター ==== */
+.scenario-select {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.scenario-btn {
+  flex:1;
+  min-width: 130px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  border: 2px solid #dde4ef;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  transition: all .2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.scenario-btn.active {
+  border-color: #f5a623;
+  color: #d48000;
+  background: #fff9ee;
+  box-shadow: 0 2px 8px rgba(245,166,35,.2);
+}
+.scenario-btn:hover:not(.active) { border-color:#aab; color:#333; }
+
+.stage {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #dde4ef;
+  min-height: 320px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  overflow-y: auto;
+  max-height: 420px;
+}
+.stage-empty {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:260px;
+  color:#aab;
+  font-size:14px;
+  text-align:center;
+  line-height:1.8;
+}
+
+/* 吹き出し */
+.bubble-row {
+  display: flex;
+  margin-bottom: 14px;
+  animation: fadeIn .4s ease;
+}
+.bubble-row.a { justify-content: flex-start; }
+.bubble-row.b { justify-content: flex-end; }
+
+@keyframes fadeIn {
+  from { opacity:0; transform: translateY(8px); }
+  to { opacity:1; transform: translateY(0); }
+}
+
+.avatar {
+  width:38px; height:38px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  flex-shrink:0;
+  font-weight:900;
+  color:#fff;
+}
+.avatar.a { background:#0d5ca4; margin-right:10px; }
+.avatar.b { background:#22b573; margin-left:10px; order:2; }
+
+.bubble {
+  max-width: 75%;
+  border-radius: 14px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.bubble.a {
+  background: #e8f0fb;
+  border: 1.5px solid #b8d0f0;
+  border-top-left-radius: 4px;
+}
+.bubble.b {
+  background: #e5f7ef;
+  border: 1.5px solid #a8dfc1;
+  border-top-right-radius: 4px;
+}
+.bubble .who {
+  font-size:10px;
+  opacity:.6;
+  margin-bottom:4px;
+  color:#1a2d4a;
+}
+.bubble .text { color:#1a2d4a; }
+.bubble .tip {
+  font-size:11px;
+  color:#c07000;
+  margin-top:7px;
+  padding-top:7px;
+  border-top:1px solid rgba(245,166,35,.35);
+}
+
+.sim-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.btn-next {
+  flex:1;
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg,#0d5ca4,#1a3a6b);
+  color:#fff;
+  font-size:15px;
+  font-weight:900;
+  cursor:pointer;
+  letter-spacing:1px;
+  transition: all .2s;
+  box-shadow: 0 3px 12px rgba(13,92,164,.3);
+}
+.btn-next:hover { transform:scale(1.02); box-shadow:0 5px 20px rgba(13,92,164,.4); }
+.btn-next:disabled { background:#ccd4e0; color:#999; cursor:not-allowed; transform:none; box-shadow:none; }
+
+.btn-reset {
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 2px solid #dde4ef;
+  background: #fff;
+  color: #888;
+  font-size: 13px;
+  font-weight:700;
+  cursor:pointer;
+  transition: all .2s;
+}
+.btn-reset:hover { border-color:#999; color:#333; }
+
+.voice-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size:12px;
+  color:#666;
+}
+.toggle {
+  width:36px; height:20px;
+  background:#ccc;
+  border-radius:10px;
+  position:relative;
+  cursor:pointer;
+  transition: background .2s;
+}
+.toggle.on { background:#22b573; }
+.toggle::after {
+  content:'';
+  position:absolute;
+  width:16px; height:16px;
+  background:#fff;
+  border-radius:50%;
+  top:2px; left:2px;
+  transition: left .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.toggle.on::after { left:18px; }
+
+.progress-bar {
+  height:5px;
+  background:#dde4ef;
+  border-radius:3px;
+  margin-bottom:14px;
+  overflow:hidden;
+}
+.progress-fill {
+  height:100%;
+  background: linear-gradient(90deg,#0d5ca4,#22b573);
+  border-radius:3px;
+  transition: width .4s ease;
+}
+
+/* ==== クイズ ==== */
+.quiz-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
+.quiz-score {
+  font-size:13px;
+  color:#666;
+  background:#fff;
+  padding:6px 12px;
+  border-radius:20px;
+  border:1px solid #dde4ef;
+}
+.quiz-score span { color:#0d5ca4; font-weight:900; font-size:16px; }
+
+.quiz-card {
+  background: #fff;
+  border-radius:14px;
+  border:1px solid #dde4ef;
+  padding: 22px;
+  margin-bottom:14px;
+  animation: fadeIn .3s ease;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
+.quiz-num {
+  font-size:11px;
+  color:#888;
+  margin-bottom:10px;
+  letter-spacing:1px;
+  font-weight:700;
+}
+.quiz-q {
+  font-size:16px;
+  font-weight:700;
+  line-height:1.6;
+  margin-bottom:18px;
+  color:#1a2d4a;
+}
+.quiz-q .scene {
+  background: #fff9ee;
+  border-left:3px solid #f5a623;
+  padding:10px 14px;
+  border-radius:0 8px 8px 0;
+  font-size:13px;
+  font-weight:600;
+  color:#c07000;
+  margin-bottom:12px;
+}
+
+.choices {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.choice {
+  padding:14px 18px;
+  border-radius:10px;
+  border:2px solid #dde4ef;
+  background: #f8fafc;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:600;
+  transition:all .2s;
+  text-align:left;
+  color:#333;
+}
+.choice:hover:not(:disabled) { border-color:#0d5ca4; background:#e8f0fb; color:#0d5ca4; }
+.choice.correct { border-color:#22b573; background:#e5f7ef; color:#16854f; }
+.choice.wrong { border-color:#e94560; background:#fdeef1; color:#c0193a; }
+.choice:disabled { cursor:not-allowed; }
+
+.explanation {
+  margin-top:14px;
+  padding:14px;
+  background:#fff9ee;
+  border-radius:10px;
+  border:1px solid #f5d87a;
+  font-size:13px;
+  color:#555;
+  line-height:1.7;
+  display:none;
+}
+.explanation.show { display:block; animation: fadeIn .3s ease; }
+.explanation strong { color:#c07000; }
+
+.btn-next-q {
+  width:100%;
+  padding:14px;
+  border-radius:10px;
+  border:none;
+  background: linear-gradient(135deg,#0d5ca4,#1a3a6b);
+  color:#fff;
+  font-size:15px;
+  font-weight:900;
+  cursor:pointer;
+  display:none;
+  transition:all .2s;
+  margin-top:12px;
+  box-shadow: 0 3px 10px rgba(13,92,164,.3);
+}
+.btn-next-q:hover { transform:scale(1.02); }
+.btn-next-q.show { display:block; animation: fadeIn .3s ease; }
+
+/* 結果画面 */
+.result {
+  text-align:center;
+  padding:36px 16px;
+  display:none;
+  background:#fff;
+  border-radius:14px;
+  border:1px solid #dde4ef;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
+.result.show { display:block; animation: fadeIn .5s ease; }
+.result .trophy { font-size:64px; margin-bottom:16px; }
+.result h2 { font-size:22px; font-weight:900; margin-bottom:8px; color:#1a2d4a; }
+.result .score-big { font-size:48px; font-weight:900; color:#0d5ca4; margin:16px 0; }
+.result .score-big span { font-size:20px; color:#888; }
+.result p { color:#666; font-size:14px; margin-bottom:24px; line-height:1.7; }
+.btn-restart {
+  padding:14px 32px;
+  border-radius:10px;
+  border:none;
+  background: linear-gradient(135deg,#0d5ca4,#1a3a6b);
+  color:#fff;
+  font-size:15px;
+  font-weight:900;
+  cursor:pointer;
+  transition:all .2s;
+  box-shadow: 0 3px 10px rgba(13,92,164,.3);
+}
+.btn-restart:hover { transform:scale(1.04); }
+
+.result-feedback {
+  background:#f8fafc;
+  border-radius:12px;
+  padding:14px;
+  margin:16px 0;
+  text-align:left;
+  border:1px solid #dde4ef;
+}
+.result-feedback h4 { color:#0d5ca4; font-size:13px; margin-bottom:10px; }
+.result-item {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  padding:5px 0;
+  border-bottom:1px solid #eef2f7;
+}
+.result-item:last-child { border:none; }
+
+/* ==== AIコーチ ==== */
+.ai-coach {
+  background:#fff;
+  border-radius:14px;
+  border:1px solid #dde4ef;
+  padding:20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
+.ai-header {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:18px;
+  padding-bottom:14px;
+  border-bottom:1px solid #eef2f7;
+}
+.ai-avatar {
+  width:44px; height:44px;
+  border-radius:50%;
+  background: linear-gradient(135deg,#0d5ca4,#22b573);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  color:#fff;
+}
+.ai-header-text h3 { font-size:15px; font-weight:900; color:#1a2d4a; }
+.ai-header-text p { font-size:11px; color:#888; }
+
+.ai-chat {
+  min-height:260px;
+  max-height:380px;
+  overflow-y:auto;
+  margin-bottom:14px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.ai-msg {
+  display:flex;
+  gap:10px;
+  animation: fadeIn .3s ease;
+}
+.ai-msg.user { flex-direction: row-reverse; }
+
+.ai-msg-bubble {
+  max-width:80%;
+  padding:10px 14px;
+  border-radius:12px;
+  font-size:14px;
+  line-height:1.6;
+  font-weight:500;
+}
+.ai-msg.ai .ai-msg-bubble {
+  background:#e8f0fb;
+  border:1.5px solid #b8d0f0;
+  color:#1a2d4a;
+  border-top-left-radius:4px;
+}
+.ai-msg.user .ai-msg-bubble {
+  background:#0d5ca4;
+  color:#fff;
+  border-top-right-radius:4px;
+}
+
+.ai-input-area {
+  display:flex;
+  gap:8px;
+}
+.ai-input {
+  flex:1;
+  padding:12px 14px;
+  border-radius:10px;
+  border:2px solid #dde4ef;
+  font-size:14px;
+  font-family: inherit;
+  color:#1a2d4a;
+  background:#f8fafc;
+  transition:border-color .2s;
+  outline:none;
+}
+.ai-input:focus { border-color:#0d5ca4; background:#fff; }
+.ai-input::placeholder { color:#aab; }
+.btn-send {
+  padding:12px 18px;
+  border-radius:10px;
+  border:none;
+  background: linear-gradient(135deg,#0d5ca4,#1a3a6b);
+  color:#fff;
+  font-size:14px;
+  font-weight:900;
+  cursor:pointer;
+  transition:all .2s;
+  white-space:nowrap;
+}
+.btn-send:hover { transform:scale(1.04); box-shadow:0 3px 10px rgba(13,92,164,.3); }
+
+.quick-qs {
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-bottom:12px;
+}
+.quick-q {
+  padding:6px 12px;
+  border-radius:20px;
+  border:1.5px solid #b8d0f0;
+  background:#e8f0fb;
+  color:#0d5ca4;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+}
+.quick-q:hover { background:#0d5ca4; color:#fff; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>片側交互通行<span>(片交)</span>無線トレーニング</h1>
+  <p>ATセキュリティー株式会社|現場研修用アプリ</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('sim')">📻 無線シミュレーター</div>
+  <div class="tab" onclick="switchTab('quiz')">🧠 確認クイズ</div>
+  <div class="tab" onclick="switchTab('ai')">🤖 AIコーチ</div>
+</div>
+
+<!-- シミュレーター -->
+<div class="panel active" id="panel-sim">
+  <div class="scenario-select">
+    <div class="scenario-btn active" onclick="loadScenario('basic',this)">🚗 基本<br><small>のみ（1台）</small></div>
+    <div class="scenario-btn" onclick="loadScenario('multi',this)">🚙🚙 複数台<br><small>B側なし</small></div>
+    <div class="scenario-btn" onclick="loadScenario('multi_continue',this)">🚙➕ 複数台<br><small>A側に待機あり</small></div>
+    <div class="scenario-btn" onclick="loadScenario('confirm',this)">✅ 確認後<br><small>B側に待機あり</small></div>
+    <div class="scenario-btn" onclick="loadScenario('cancel',this)">↩️ キャンセル<br><small>途中で消えた</small></div>
+    <div class="scenario-btn" onclick="loadScenario('emergency',this)">🚨 緊急<br><small>突破！</small></div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="sim-progress" style="width:0%"></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="stage-empty">⬆️ シナリオを選んでスタート!</div>
+  </div>
+
+  <div class="sim-controls">
+    <div class="voice-toggle">
+      <div class="toggle on" id="voice-toggle" onclick="toggleVoice()"></div>
+      <span id="voice-label">音声ON</span>
+    </div>
+    <button class="btn-reset" onclick="resetSim()">↺ リセット</button>
+    <button class="btn-next" id="btn-next" onclick="nextStep()" disabled>シナリオを選んでください</button>
+  </div>
+</div>
+
+<!-- クイズ -->
+<div class="panel" id="panel-quiz">
+  <div class="quiz-header">
+    <div>
+      <div style="font-size:14px;font-weight:900;color:#1a2d4a;">確認クイズ</div>
+      <div style="font-size:11px;color:#888;">全10問</div>
+    </div>
+    <div class="quiz-score">正解: <span id="quiz-correct">0</span> / <span id="quiz-total">0</span></div>
+  </div>
+
+  <div id="quiz-container">
+    <div class="quiz-card" id="quiz-card">
+      <div class="quiz-num" id="quiz-num">問題 1 / 10</div>
+      <div class="quiz-q" id="quiz-q"></div>
+      <div class="choices" id="quiz-choices"></div>
+      <div class="explanation" id="quiz-exp"></div>
+      <button class="btn-next-q" id="btn-next-q" onclick="nextQuestion()">次の問題 →</button>
+    </div>
+  </div>
+
+  <div class="result" id="quiz-result">
+    <div class="trophy" id="result-trophy">🏆</div>
+    <h2 id="result-title">お疲れさまでした!</h2>
+    <div class="score-big" id="result-score">0<span>/10</span></div>
+    <div class="result-feedback" id="result-feedback"></div>
+    <p id="result-msg"></p>
+    <button class="btn-restart" onclick="restartQuiz()">もう一度挑戦する</button>
+  </div>
+</div>
+
+<!-- AIコーチ -->
+<div class="panel" id="panel-ai">
+  <div class="ai-coach">
+    <div class="ai-header">
+      <div class="ai-avatar">🤖</div>
+      <div class="ai-header-text">
+        <h3>片交AIコーチ</h3>
+        <p>無線や現場対応について何でも聞いてください</p>
+      </div>
+    </div>
+
+    <div class="ai-chat" id="ai-chat">
+      <div class="ai-msg ai">
+        <div class="ai-msg-bubble">
+          こんにちは!片交AIコーチです🎙️<br>
+          無線の言い方、シナリオの疑問、現場でのアドバイスなど、なんでも聞いてください!
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-qs">
+      <div class="quick-q" onclick="quickAsk('「のみ」と「ラスト」の違いを教えて')">「のみ」と「ラスト」の違い</div>
+      <div class="quick-q" onclick="quickAsk('ナンバーを間違えて伝えたらどうする?')">ナンバーを間違えたら?</div>
+      <div class="quick-q" onclick="quickAsk('緊急時の突破対応を教えて')">緊急時の対応</div>
+      <div class="quick-q" onclick="quickAsk('無線が聞き取れない時はどうする?')">無線が聞こえない時</div>
+    </div>
+
+    <div class="ai-input-area">
+      <input class="ai-input" id="ai-input" type="text" placeholder="例: 「了解」はどのタイミングで言うの?" onkeydown="if(event.key==='Enter')sendToAI()">
+      <button class="btn-send" onclick="sendToAI()">送信 ➤</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===========================
+// ElevenLabs 音声設定
+// ===========================
+const ELEVEN_API_KEY = 'sk_d5b513e6c0689178c44b7040f0b0ac450625d21df0cfefe0';
+const ELEVEN_VOICE_ID = 'cgSgspJ2msm6clMCkdW9'; // Jessica
+
+let currentAudio = null;
+
+// 漢字→ひらがな 読み上げ用変換テーブル
+const kanjiReading = [
+  ['車両接近、流します', 'しゃりょうせっきん、ながします'],
+  ['車両接近', 'しゃりょうせっきん'],
+  ['了解。こちらなしです', 'りょうかいこちらなしです'],
+  ['了解、確認後流します', 'りょうかい、かくにんごながします'],
+  ['キャンセル了解', 'きゃんせるりょうかい'],
+  ['なし了解。では引き続き流します', 'なしりょうかい。ではひきつづきながします'],
+  ['なし了解', 'なしりょうかい'],
+  ['了解', 'りょうかい'],
+  ['確認後', 'かくにんご'],
+  ['突破', 'とっぱ'],
+  ['キャンセル', 'きゃんせる'],
+  ['ラスト', 'らすと'],
+  ['ナンバー', 'なんばー'],
+  ['のみです', 'のみです'],
+  ['なしです', 'なしです'],
+  ['正解', 'せいかい'],
+  ['不正解', 'ふせいかい'],
+  ['残念', 'ざんねん'],
+  ['満点', 'まんてん'],
+  ['完璧', 'かんぺき'],
+  ['復習', 'ふくしゅう'],
+  ['必要', 'ひつよう'],
+  ['片交', 'かたこう'],
+  ['片側交互通行', 'かたがわこうごつうこう'],
+  ['無線', 'むせん'],
+  ['車両', 'しゃりょう'],
+  ['隊員', 'たいいん'],
+  ['現場', 'げんば'],
+  ['基本', 'きほん'],
+  ['複数', 'ふくすう'],
+  ['台', 'だい'],
+  ['緊急', 'きんきゅう'],
+  ['事態', 'じたい'],
+  ['通過', 'つうか'],
+  ['確認', 'かくにん'],
+  ['待機', 'たいき'],
+  ['停車', 'ていしゃ'],
+  ['接近', 'せっきん'],
+  ['伝達', 'でんたつ'],
+  ['復唱', 'ふくしょう'],
+  ['報告', 'ほうこく'],
+  ['判断', 'はんだん'],
+  ['安全', 'あんぜん'],
+  ['練習', 'れんしゅう'],
+  ['上達', 'じょうたつ'],
+  ['先輩', 'せんぱい'],
+  ['勇気', 'ゆうき'],
+  ['合図', 'あいず'],
+  ['指示', 'しじ'],
+  ['状況', 'じょうきょう'],
+  ['対応', 'たいおう'],
+  ['折り返し', 'おりかえし'],
+  ['目視', 'もくし'],
+  ['言葉', 'ことば'],
+  ['違い', 'ちがい'],
+  ['間違え', 'まちがえ'],
+  ['訂正', 'ていせい'],
+  ['質問', 'しつもん'],
+  ['回答', 'かいとう'],
+  ['問題', 'もんだい'],
+  ['自信', 'じしん'],
+];
+
+function toYomigana(text) {
+  let result = text;
+  for (const [kanji, yomi] of kanjiReading) {
+    result = result.split(kanji).join(yomi);
+  }
+  return result;
+}
+
+async function speakElevenLabs(text) {
+  if (!voiceOn) return;
+  const yomi = toYomigana(text);
+  try {
+    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVEN_VOICE_ID}/stream`, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': ELEVEN_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        text: yomi,
+        model_id: 'eleven_multilingual_v2',
+        language_code: 'ja',
+        voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+      })
+    });
+    if (!res.ok) throw new Error('API error');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    currentAudio = new Audio(url);
+    currentAudio.play();
+  } catch(e) {
+    // フォールバック: ブラウザTTS
+    const u = new SpeechSynthesisUtterance(yomi);
+    u.lang = 'ja-JP'; u.rate = 0.9;
+    window.speechSynthesis.speak(u);
+  }
+}
+
+function speak(text) { speakElevenLabs(text); }
+
+// ===========================
+// シミュレーター
+// ===========================
+let voiceOn = true;
+let currentSteps = [];
+let stepIndex = 0;
+let currentScenario = null;
+
+const scenarios = {
+  basic: {
+    title: '基本パターン(車両1台・のみ)',
+    steps: [
+      { who:'a', text:'車両接近、流します。', tip:'A隊員:車が来たら即座に報告。B側の返事を待つ!' },
+      { who:'b', text:'了解。', tip:'B隊員:聞こえたらすぐ「了解」。これがあるまでAは流せない。' },
+      { who:'a', text:'こちら、のみです。', tip:'1台だけのときは「のみ」のひとことでOK!シンプルに。' },
+      { who:'b', text:'了解。こちらなしです。', tip:'B側に待機車両がない場合は「なしです」と状況を添える。' },
+      { who:'a', text:'なし了解。', tip:'お互いの状況確認完了!これで1サイクル終わり。', end:true },
+    ]
+  },
+  multi: {
+    title: '複数台パターン(B側に待機なし)',
+    steps: [
+      { who:'a', text:'車両接近、流します。', tip:'まずB側に報告。返事を待つ!' },
+      { who:'b', text:'了解。', tip:'B:了解の返事。これでAが車を流せる。' },
+      { who:'a', text:'ラスト、ナンバー いち・に・さん・し です。', tip:'⚠️ ナンバーは4桁!「じゅうに」ではなく「いち・に・さん・し」と1桁ずつ読む!' },
+      { who:'b', text:'いち・に・さん・し 了解。こちらなしです。', tip:'B側に待機車両がない場合。ナンバーを復唱して「なしです」で状況を伝える。' },
+      { who:'a', text:'なし了解。', tip:'A:「なし了解」で1サイクル完了!A側にも待機車両がない場合はこれで終わり。', end:true },
+    ]
+  },
+  multi_continue: {
+    title: '複数台パターン(A側に待機あり)',
+    steps: [
+      { who:'a', text:'車両接近、流します。', tip:'まずB側に報告。返事を待つ!' },
+      { who:'b', text:'了解。', tip:'B:了解の返事。' },
+      { who:'a', text:'ラスト、ナンバー いち・に・さん・し です。', tip:'ナンバーは1桁ずつ、落ち着いて。' },
+      { who:'b', text:'いち・に・さん・し 了解。こちらなしです。', tip:'B側に待機車両なし。ナンバー復唱して「なしです」。' },
+      { who:'a', text:'なし了解。では引き続き流します。', tip:'⭐ A側にまだ待機車両がいる場合!「なし了解」の後に「では引き続き流します」を添えてB側に伝える。', end:true },
+    ]
+  },
+  confirm: {
+    title: 'B側に待機あり(確認後流す)',
+    steps: [
+      { who:'a', text:'車両接近、流します。', tip:'まずB側に報告。' },
+      { who:'b', text:'了解。', tip:'B:了解。' },
+      { who:'a', text:'ラスト、ナンバー いち・に・さん・し です。', tip:'' },
+      { who:'b', text:'いち・に・さん・し 了解、確認後流します。', tip:'B側に待機車両がある場合!「確認後流します」。最終車の通過を目視で確認してから折り返しの車を流す。' },
+      { who:'a', text:'了解。', tip:'A:B側が流すのを待つ。これにて一忺環完了!', end:true },
+    ]
+  },
+  cancel: {
+    title: 'キャンセルパターン(車が曲がって消えた)',
+    steps: [
+      { who:'a', text:'車両接近、流します。', tip:'車が来たので報告。' },
+      { who:'b', text:'了解。', tip:'B:了解。' },
+      { who:'a', text:'キャンセルです。', tip:'車が横道に曲がって消えた!すぐにキャンセルを伝える。' },
+      { who:'b', text:'キャンセル了解。', tip:'B:キャンセル了解。シンプルに復唱するだけでOK。', end:true },
+    ]
+  },
+  emergency: {
+    title: '緊急事態(暴走車両・停車無視)',
+    steps: [
+      { who:'a', text:'車両接近、流します。', tip:'通常通り車両を誘導しようとしたが...' },
+      { who:'b', text:'了解。', tip:'' },
+      { who:'a', text:'突破! 突破! 突破!', tip:'🚨 緊急!停車指示を無視した車が突っ込んできた。「突破」を3回繰り返して全隊員に緊急を知らせる!', end:true },
+    ]
+  }
+};
+
+function loadScenario(key, el) {
+  currentScenario = key;
+  currentSteps = scenarios[key].steps;
+  stepIndex = 0;
+
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  const stage = document.getElementById('stage');
+  stage.innerHTML = `<div class="stage-empty" style="color:#0d5ca4;">📻 ${scenarios[key].title}<br><br>下のボタンを押して開始!</div>`;
+  document.getElementById('sim-progress').style.width = '0%';
+  document.getElementById('btn-next').disabled = false;
+  document.getElementById('btn-next').textContent = '▶ スタート!';
+}
+
+function nextStep() {
+  if (!currentScenario || stepIndex >= currentSteps.length) return;
+  const step = currentSteps[stepIndex];
+  const stage = document.getElementById('stage');
+  if (stepIndex === 0) stage.innerHTML = '';
+
+  const row = document.createElement('div');
+  row.className = `bubble-row ${step.who}`;
+  const avatar = document.createElement('div');
+  avatar.className = `avatar ${step.who}`;
+  avatar.textContent = step.who === 'a' ? 'A' : 'B';
+  const bubble = document.createElement('div');
+  bubble.className = `bubble ${step.who}`;
+  bubble.innerHTML = `
+    <div class="who">${step.who === 'a' ? 'A隊員(送り出し側)' : 'B隊員(受け側)'}</div>
+    <div class="text">「${step.text}」</div>
+    ${step.tip ? `<div class="tip">💡 ${step.tip}</div>` : ''}
+  `;
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+  stage.appendChild(row);
+  stage.scrollTop = stage.scrollHeight;
+
+  speak(step.text);
+
+  stepIndex++;
+  const pct = (stepIndex / currentSteps.length) * 100;
+  document.getElementById('sim-progress').style.width = pct + '%';
+
+  const btn = document.getElementById('btn-next');
+  if (step.end || stepIndex >= currentSteps.length) {
+    btn.textContent = '✅ 完了!シナリオを選んで再挑戦';
+    btn.disabled = true;
+    setTimeout(() => btn.disabled = false, 1500);
+  } else {
+    const next = currentSteps[stepIndex];
+    btn.textContent = next.who === 'a' ? '📢 A隊員が話す →' : '📢 B隊員が話す →';
+  }
+}
+
+function resetSim() {
+  if (currentScenario) {
+    const activeBtn = document.querySelector('.scenario-btn.active');
+    loadScenario(currentScenario, activeBtn);
+  }
+}
+
+function toggleVoice() {
+  voiceOn = !voiceOn;
+  document.getElementById('voice-toggle').classList.toggle('on', voiceOn);
+  document.getElementById('voice-label').textContent = voiceOn ? '音声ON' : '音声OFF';
+  if (!voiceOn) { window.speechSynthesis?.cancel(); if (currentAudio) { currentAudio.pause(); currentAudio = null; } }
+}
+
+// ===========================
+// クイズ
+// ===========================
+const questions = [
+  { q:'A隊員が「車両接近、流します」と無線を入れた。B隊員はどうする?', scene:'📻 A:「車両接近、流します。」', choices:['すぐに返事はせず、車を止めて確認する','「了解」とすぐに返事をする','自分のペースで返事をする'], correct:1, exp:'<strong>すぐに返事が必須!</strong> B隊員が「了解」を返すまで、A隊員は絶対に車を流せません。返事が遅れると危険です。' },
+  { q:'A隊員からB隊員に通す車が1台だけだった場合、何と伝える?', scene:'🚗 車が1台だけ来ている', choices:['「1台です。」','「車1台、通過します。」','「こちら、のみです。」'], correct:2, exp:'<strong>「のみ」</strong>が正解!シンプルで聞き取りやすい。「1台です」だと無線でうまく伝わらないことが多い。' },
+  { q:'ナンバー「12ー34」の車を無線でどう伝える?', scene:'🔢 最後の車のナンバーを伝える場面', choices:['「じゅうに・さんじゅうし」','「いち・に・さん・し」','「いちに・さんし」'], correct:1, exp:'<strong>4桁バラバラに読む!</strong>「いち・に・さん・し」が正解。2桁読みだと聞き取りにくく、間違いが起きやすい。1桁ずつ確実に。' },
+  { q:'B隊員側に待機車両がいない場合、どう返す?', scene:'📻 A:「ラスト、ナンバー いち・に・さん・し です。」', choices:['「いち・に・さん・し 了解。」だけ','「いち・に・さん・し 了解。こちらなしです。」','「いち・に・さん・し 了解。では流します。」'], correct:1, exp:'<strong>「なしです」</strong>を添えることで、A隊員が「あ、B側には待機車両がいないんだな」とわかる。状況を一緒に伝えるのがポイント。' },
+  { q:'「ラスト、1234です」と伝えた後、新しい車が来た。どうする?', scene:'⚠️ ラストと伝えたのに別の車が来た!', choices:['「あ、待って!もう1台!」と叫ぶ','急いでその車も流す','必ずいったん止める!'], correct:2, exp:'<strong>必ず止める!</strong> 相手はもう「これが最後」と思って動き始めているかも。慌てて叫んでも危険。まず止めて、落ち着いて新たに伝える。' },
+  { q:'無線が聞き取れなかったとき、何と言う?', scene:'🔇 ガガガ...よく聞き取れなかった', choices:['何となく「了解」と返す','「もう一度お願いします。」','無視して自分の判断で動く'], correct:1, exp:'<strong>「もう一度お願いします」</strong>が正解!聞き取れないまま車を流すのは事故のもと。わからなかったら素直に聞き返す勇気が大切。' },
+  { q:'「車両接近、流します」と伝えたが、車が横道に曲がって消えた。どうする?', scene:'↩️ 伝えた後に車が曲がって消えた!', choices:['何も言わずそのまま待つ','「すみません、車がいなくなりました」と説明する','「キャンセルです。」と伝える'], correct:2, exp:'<strong>「キャンセルです」</strong>のひとことでOK!相手も「キャンセル了解」と返すだけ。長い説明は不要。シンプルが一番。' },
+  { q:'B隊員側に待機車両がいて、最終車の通過を確認してから流したい場合は?', scene:'🚗🚗 B側に待機車両がいる', choices:['「了解。流します。」','「いち・に・さん・し 了解、確認後流します。」','「いち・に・さん・し 了解。こちらなしです。」'], correct:1, exp:'<strong>「確認後流します」</strong>が正解!最終車が通過したことを目視してから流す。「なしです」はB側に待機車両がない場合の言葉。' },
+  { q:'暴走車両が停車指示を無視して突っ込んできた!何と叫ぶ?', scene:'🚨 緊急!車が止まらない!', choices:['「緊急事態!緊急事態!」','「危ない!止まれ!止まれ!」','「突破!突破!突破!」'], correct:2, exp:'<strong>「突破!」を3回</strong>が正解!これが全隊員への緊急合図。「突破」という言葉は覚えやすく、パニックでも出やすい。必ず3回繰り返す。' },
+  { q:'B隊員から「なしです」と来た。A側にも待機車両がない場合の返し方は?', scene:'📻 B:「いち・に・さん・し 了解。こちらなしです。」', choices:['「了解しました。こちらも車両はいません。」','「なし了解。」','返事は不要、そのまま待つ'], correct:1, exp:'<strong>「なし了解」</strong>でOK!シンプルに返す。ポイント1「返事は必ずする」を忘れずに。長い返事より短くて正確な返事が現場では大事。' }
+];
+
+let qIndex = 0;
+let correctCount = 0;
+let answered = [];
+
+function initQuiz() {
+  qIndex = 0; correctCount = 0; answered = [];
+  document.getElementById('quiz-correct').textContent = 0;
+  document.getElementById('quiz-total').textContent = 0;
+  document.getElementById('quiz-result').classList.remove('show');
+  document.getElementById('quiz-container').style.display = 'block';
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = questions[qIndex];
+  document.getElementById('quiz-num').textContent = `問題 ${qIndex+1} / ${questions.length}`;
+  document.getElementById('quiz-q').innerHTML = (q.scene ? `<div class="scene">${q.scene}</div>` : '') + q.q;
+  const choices = document.getElementById('quiz-choices');
+  choices.innerHTML = '';
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.textContent = `${['1','2','3'][i]} ${c}`;
+    btn.onclick = () => answerQuestion(i);
+    choices.appendChild(btn);
+  });
+  document.getElementById('quiz-exp').className = 'explanation';
+  document.getElementById('quiz-exp').innerHTML = '';
+  document.getElementById('btn-next-q').className = 'btn-next-q';
+  document.getElementById('btn-next-q').textContent = qIndex < questions.length - 1 ? '次の問題 →' : '結果を見る →';
+  document.getElementById('quiz-total').textContent = qIndex + 1;
+}
+
+function answerQuestion(chosen) {
+  const q = questions[qIndex];
+  const buttons = document.querySelectorAll('.choice');
+  buttons.forEach(b => b.disabled = true);
+  const isCorrect = chosen === q.correct;
+  buttons[chosen].classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) buttons[q.correct].classList.add('correct');
+  if (isCorrect) { correctCount++; document.getElementById('quiz-correct').textContent = correctCount; speak('正解!'); }
+  else { speak('残念、不正解です。'); }
+  answered.push({ q: q.q, correct: isCorrect });
+  const exp = document.getElementById('quiz-exp');
+  exp.innerHTML = (isCorrect ? '✅ 正解! ' : '❌ 不正解... ') + q.exp;
+  exp.classList.add('show');
+  document.getElementById('btn-next-q').classList.add('show');
+}
+
+function nextQuestion() {
+  qIndex++;
+  if (qIndex >= questions.length) showResult();
+  else showQuestion();
+}
+
+function showResult() {
+  document.getElementById('quiz-container').style.display = 'none';
+  const result = document.getElementById('quiz-result');
+  result.classList.add('show');
+  document.getElementById('result-score').innerHTML = `${correctCount}<span>/${questions.length}</span>`;
+  let trophy, title, msg;
+  const pct = correctCount / questions.length;
+  if (pct === 1) { trophy='🏆'; title='満点!完璧です!'; msg='無線の基本はバッチリ!あとは現場で先輩と実践練習するだけ。自信を持って!'; }
+  else if (pct >= 0.8) { trophy='🥇'; title='よくできました!'; msg='ほぼ完璧!あと少し復習すれば現場でも安心して動けます。'; }
+  else if (pct >= 0.6) { trophy='🥈'; title='もう少し!'; msg='基本はわかってきた。間違えた問題を中心にもう一度確認してみよう。'; }
+  else { trophy='📖'; title='復習が必要!'; msg='大丈夫、最初は難しいもの。シミュレーターで練習してから再挑戦!'; }
+  document.getElementById('result-trophy').textContent = trophy;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-msg').textContent = msg;
+  const feedback = document.getElementById('result-feedback');
+  feedback.innerHTML = '<h4>📋 問題ごとの結果</h4>';
+  answered.forEach((a, i) => {
+    const div = document.createElement('div');
+    div.className = 'result-item';
+    div.innerHTML = `<span>${a.correct ? '✅' : '❌'}</span><span style="font-size:12px;color:#555;">問題${i+1}: ${questions[i].q.substring(0,30)}...</span>`;
+    feedback.appendChild(div);
+  });
+  speak(title);
+}
+
+function restartQuiz() { initQuiz(); }
+
+// ===========================
+// AIコーチ(ナレッジベース)
+// ===========================
+const knowledgeBase = [
+  { keys:['のみ','ラスト','違い'], ans:'「のみ」は車両が1台だけの時に使います。「ラスト」は複数台の最後の車を伝える時。「のみ」→シンプルに1台、「ラスト」→ナンバーを一緒に伝えてください!' },
+  { keys:['ナンバー','番号','間違','ミス'], ans:'ナンバーを間違えた場合は、落ち着いて「すみません、訂正します。ナンバー〇〇〇〇です」と言い直せばOKです。相手が復唱してくれるまで確認しましょう。' },
+  { keys:['緊急','突破','暴走','止まらない'], ans:'緊急時は「突破!突破!突破!」を3回繰り返します。これが全隊員への緊急合図です。パニックにならず、この一言だけ叫んでください。' },
+  { keys:['聞こえ','聞き取れ','無線','ガガ'], ans:'無線が聞き取れない時は「もう一度お願いします」とはっきり伝えましょう。聞こえないまま「了解」するのが一番危険です。勇気を持って聞き返して!' },
+  { keys:['了解','タイミング','いつ'], ans:'「了解」は相手の無線を確実に聞き取った直後に返します。聞こえたらすぐ!が鉄則です。B隊員が了解を返すまでA隊員は車を流せません。' },
+  { keys:['キャンセル','消えた','曲がっ'], ans:'車がいなくなった場合は「キャンセルです」のひとことでOK!長い説明は不要です。相手が「キャンセル了解」と返してくれます。' },
+  { keys:['なし','待機','いない'], ans:'B側に待機車両がない場合は「こちらなしです」と添えます。状況をひとことで共有することで、お互いの判断がスムーズになります。' },
+  { keys:['確認後','流す','タイミング','順番'], ans:'B側に待機車両がある場合は「確認後流します」と返します。最終車がB側を通過したのを目視で確認してから、折り返し車を流してください。' },
+  { keys:['練習','上達','コツ'], ans:'上達のコツは「声に出す練習」です!シミュレーターの音声を聞いて、一緒に口に出してみましょう。無線の言葉は体で覚えるのが一番早いです。' },
+];
+
+function getAIReply(input) {
+  const text = input.toLowerCase();
+  for (const kb of knowledgeBase) {
+    if (kb.keys.some(k => text.includes(k))) return kb.ans;
+  }
+  return `「${input}」について、現場では臨機応変な判断が大切です。基本の言葉(了解・のみ・ラスト・キャンセル・突破)をしっかり覚えて、あとは先輩隊員に現場で確認してみましょう!わからないことは必ず聞くのが安全の第一歩です。`;
+}
+
+function addMessage(text, role) {
+  const chat = document.getElementById('ai-chat');
+  const msg = document.createElement('div');
+  msg.className = `ai-msg ${role}`;
+  msg.innerHTML = `<div class="ai-msg-bubble">${text}</div>`;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function sendToAI() {
+  const input = document.getElementById('ai-input');
+  const text = input.value.trim();
+  if (!text) return;
+  addMessage(text, 'user');
+  input.value = '';
+  setTimeout(() => {
+    const reply = getAIReply(text);
+    addMessage(reply, 'ai');
+    speak(reply);
+  }, 400);
+}
+
+function quickAsk(q) {
+  document.getElementById('ai-input').value = q;
+  sendToAI();
+}
+
+// タブ切り替え
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0&&tab==='sim')||(i===1&&tab==='quiz')||(i===2&&tab==='ai'));
+  });
+  document.getElementById('panel-sim').classList.toggle('active', tab==='sim');
+  document.getElementById('panel-quiz').classList.toggle('active', tab==='quiz');
+  document.getElementById('panel-ai').classList.toggle('active', tab==='ai');
+}
+
+initQuiz();
+</script>
+</body>
+</html>
