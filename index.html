@@ -587,10 +587,10 @@ body {
   </div>
   <div class="voice-select-row" id="voice-select-row">
     <span>声：</span>
-    <button class="voice-btn active" id="vbtn-0" onclick="selectVoice(0)">ジェシカ ♀</button>
-    <button class="voice-btn" id="vbtn-1" onclick="selectVoice(1)">ベラ ♀</button>
-    <button class="voice-btn" id="vbtn-2" onclick="selectVoice(2)">アダム ♂</button>
-    <button class="voice-btn" id="vbtn-3" onclick="selectVoice(3)">アントニ ♂</button>
+    <button class="voice-btn active" id="vbtn-0" onclick="selectVoice(0)">アダム ♂</button>
+    <button class="voice-btn" id="vbtn-1" onclick="selectVoice(1)">アントニ ♂</button>
+    <button class="voice-btn" id="vbtn-2" onclick="selectVoice(2)">ジェシカ ♀</button>
+    <button class="voice-btn" id="vbtn-3" onclick="selectVoice(3)">ベラ ♀</button>
   </div>
 </div>
 
@@ -676,12 +676,12 @@ body {
 // ===========================
 const ELEVEN_API_KEY = 'sk_d5b513e6c0689178c44b7040f0b0ac450625d21df0cfefe0';
 const VOICES = [
-  { id: 'cgSgspJ2msm6clMCkdW9', name: 'ジェシカ', gender: '♀' },
-  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'ベラ',     gender: '♀' },
   { id: 'pNInz6obpgDQGcFmaJgB', name: 'アダム',   gender: '♂' },
   { id: 'ErXwobaYiN019PkySvjV', name: 'アントニ', gender: '♂' },
+  { id: 'cgSgspJ2msm6clMCkdW9', name: 'ジェシカ', gender: '♀' },
+  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'ベラ',     gender: '♀' },
 ];
-let currentVoiceId = 'cgSgspJ2msm6clMCkdW9';
+let currentVoiceId = 'pNInz6obpgDQGcFmaJgB'; // default: Adam
 
 let currentAudio = null;
 
