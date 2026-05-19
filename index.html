@@ -673,19 +673,27 @@ body {
 // ブラウザ音声設定（Web Speech API）
 // ===========================
 const VOICES = [
-  { name: 'Otoya',  label: '音人', gender: '♂', lang: 'ja-JP' },
-  { name: 'Kyoko',  label: '京子', gender: '♀', lang: 'ja-JP' },
+  { name: 'Otoya',  label: '音人', gender: '♂', lang: 'ja-JP', pitch: 0.75, rate: 0.9 },
+  { name: 'Kyoko',  label: '京子', gender: '♀', lang: 'ja-JP', pitch: 1.2,  rate: 0.9 },
 ];
 let currentVoiceIdx = 0;
 let currentAudio = null;
+let cachedVoices = [];
+
+// 音声リストを先読みしてキャッシュ
+function loadVoices() {
+  cachedVoices = window.speechSynthesis.getVoices();
+}
+window.speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
 
 function getBrowserVoice(idx) {
-  const voices = window.speechSynthesis.getVoices();
+  const voices = cachedVoices.length ? cachedVoices : window.speechSynthesis.getVoices();
   const target = VOICES[idx];
-  // 名前で検索
+  // 完全一致で探す
   let v = voices.find(v => v.name === target.name);
-  // 見つからなければ同言語の声を使う
-  if (!v) v = voices.find(v => v.lang.startsWith('ja'));
+  // 「otoya」で部分一致
+  if (!v) v = voices.find(v => v.name.toLowerCase().includes(target.name.toLowerCase()));
   return v || null;
 }
 
@@ -768,7 +776,9 @@ function speak(text) {
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(yomi);
   u.lang = 'ja-JP';
-  u.rate = 0.9;
+  const cfg = VOICES[currentVoiceIdx];
+  u.rate  = cfg.rate;
+  u.pitch = cfg.pitch;
   const v = getBrowserVoice(currentVoiceIdx);
   if (v) u.voice = v;
   window.speechSynthesis.speak(u);
