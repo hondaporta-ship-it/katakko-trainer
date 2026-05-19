@@ -587,10 +587,8 @@ body {
   </div>
   <div class="voice-select-row" id="voice-select-row">
     <span>声：</span>
-    <button class="voice-btn active" id="vbtn-0" onclick="selectVoice(0)">アダム ♂</button>
-    <button class="voice-btn" id="vbtn-1" onclick="selectVoice(1)">アントニ ♂</button>
-    <button class="voice-btn" id="vbtn-2" onclick="selectVoice(2)">ジェシカ ♀</button>
-    <button class="voice-btn" id="vbtn-3" onclick="selectVoice(3)">ベラ ♀</button>
+    <button class="voice-btn active" id="vbtn-0" onclick="selectVoice(0)">音人 ♂</button>
+    <button class="voice-btn" id="vbtn-1" onclick="selectVoice(1)">京子 ♀</button>
   </div>
 </div>
 
@@ -672,18 +670,24 @@ body {
 
 <script>
 // ===========================
-// ElevenLabs 音声設定
+// ブラウザ音声設定（Web Speech API）
 // ===========================
-const ELEVEN_API_KEY = 'sk_d5b513e6c0689178c44b7040f0b0ac450625d21df0cfefe0';
 const VOICES = [
-  { id: 'pNInz6obpgDQGcFmaJgB', name: 'アダム',   gender: '♂' },
-  { id: 'ErXwobaYiN019PkySvjV', name: 'アントニ', gender: '♂' },
-  { id: 'cgSgspJ2msm6clMCkdW9', name: 'ジェシカ', gender: '♀' },
-  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'ベラ',     gender: '♀' },
+  { name: 'Otoya',  label: '音人', gender: '♂', lang: 'ja-JP' },
+  { name: 'Kyoko',  label: '京子', gender: '♀', lang: 'ja-JP' },
 ];
-let currentVoiceId = 'pNInz6obpgDQGcFmaJgB'; // default: Adam
-
+let currentVoiceIdx = 0;
 let currentAudio = null;
+
+function getBrowserVoice(idx) {
+  const voices = window.speechSynthesis.getVoices();
+  const target = VOICES[idx];
+  // 名前で検索
+  let v = voices.find(v => v.name === target.name);
+  // 見つからなければ同言語の声を使う
+  if (!v) v = voices.find(v => v.lang.startsWith('ja'));
+  return v || null;
+}
 
 // 漢字→ひらがな 読み上げ用変換テーブル
 const kanjiReading = [
@@ -758,46 +762,25 @@ function toYomigana(text) {
   return result;
 }
 
-async function speakElevenLabs(text) {
+function speak(text) {
   if (!voiceOn) return;
   const yomi = toYomigana(text);
-  try {
-    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${currentVoiceId}/stream`, {
-      method: 'POST',
-      headers: {
-        'xi-api-key': ELEVEN_API_KEY,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        text: yomi,
-        model_id: 'eleven_multilingual_v2',
-        language_code: 'ja',
-        voice_settings: { stability: 0.5, similarity_boost: 0.75 }
-      })
-    });
-    if (!res.ok) throw new Error('API error');
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    currentAudio = new Audio(url);
-    currentAudio.play();
-  } catch(e) {
-    // フォールバック: ブラウザTTS
-    const u = new SpeechSynthesisUtterance(yomi);
-    u.lang = 'ja-JP'; u.rate = 0.9;
-    window.speechSynthesis.speak(u);
-  }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(yomi);
+  u.lang = 'ja-JP';
+  u.rate = 0.9;
+  const v = getBrowserVoice(currentVoiceIdx);
+  if (v) u.voice = v;
+  window.speechSynthesis.speak(u);
 }
 
 function selectVoice(idx) {
-  currentVoiceId = VOICES[idx].id;
+  currentVoiceIdx = idx;
   VOICES.forEach((_,i) => {
     const btn = document.getElementById('vbtn-'+i);
     if (btn) btn.classList.toggle('active', i===idx);
   });
 }
-
-function speak(text) { speakElevenLabs(text); }
 
 // ===========================
 // シミュレーター
